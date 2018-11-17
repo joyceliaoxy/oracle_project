@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 
+# restful Api
 app = Flask(__name__)
 api = Api(app)
 
