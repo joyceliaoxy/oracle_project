@@ -1,62 +1,58 @@
 from flask import Flask, request
-from flask_restful import Resource, Api, reqparse, abort
+from flask_restful import Resource, Api
+from collections import OrderedDict
+
 
 # restful Api
 app = Flask(__name__)
 api = Api(app)
 
-todo = {
-    'todo1': {'task': 'build api'},
-    'todo2': {'task': 'say hello'},
-    'todo3': {'task': 'done!'},
-}
+class clean_string(Resource):
+    def get(self, str1):
+        return {'result': ''.join(OrderedDict.fromkeys(str1))}, 200
 
-def todo_is_none(todo_id):
-    if todo_id not in todo:
-        abort(404, message = "Todo {} dosen't exist".format(todo_id))
+class clean_string_1(Resource):
+    def get(self, str1):
+        temp, temp1 = list(str1), []
+        for item in temp:
+            if item not in temp1:
+                temp1.append(item)
 
-parser = reqparse.RequestParser()
-parser.add_argument('task')
+        return {'result': ''.join(temp1)}, 200
 
-# shows a single todo item and can delete a todo item
-class Todo(Resource):
-    def get(self, todo_id):
-        todo_is_none(todo_id)
-        return todo[todo_id]
+class largest_block(Resource):
+    def get(self, str2):
+        temp, dict = list(str2), {}
+        for char in temp:
+            if char not in dict:
+                dict[char] = 1
+            else:
+                dict[char] += 1
 
-    def delete(self, todo_id):
-        del todo[todo_id]
-        return '', 204
+        return {'result': dict.get(max(dict, key = dict.get))}, 200
 
-    def put(self, todo_id):
-        args = parser.parse_args()
-        task = {'task': args['task']}
-        todo[todo_id] =task
-        return task,201
+class sort_string(Resource):
+    def get(self, str3):
+        temp = list(str3)
+        temp.sort()
+        return {'result': ''.join(temp)}, 200
 
-    def post(self):
-        some_json = request.get_json()
-        return {'you sent': some_json}, 201
+class sort_string_1(Resource):
+    def get(self, str3):
+        temp, result = list(str3), []
+        for i in range(0, len(temp)):
+            m = min(temp)
+            result.append(m)
+            temp.remove(m)
 
-# shows a list of all todos, and can post to add new task
-class Todo_list(Resource):
-    def get(self):
-        return todo
+        return {'result': ''.join(result)}, 200
 
-    def post(self):
-        args = parser.parse_args()
-        todo_id = int(max(todo.keys()).lstrip('todo')) + 1
-        todo_id = 'todo%i' % todo_id
-        todo[todo_id] = {'task': args['task']}
-        return todo[todo_id], 201
 
-class Multi(Resource):
-    def get(self, num):
-        return {'result': num * 10}
-
-api.add_resource(Todo, '/todos/<todo_id>')
-api.add_resource(Todo_list, '/todos')
-api.add_resource(Multi, '/multi/<int:num>')
+api.add_resource(clean_string, '/clean_string/<string:str1>')
+api.add_resource(clean_string_1, '/clean_string_1/<string:str1>')
+api.add_resource(largest_block, '/largest_block/<string:str2>')
+api.add_resource(sort_string, '/sort_string/<string:str3>')
+api.add_resource(sort_string_1, '/sort_string_1/<string:str3>')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug = True, host = '0.0.0.0')
